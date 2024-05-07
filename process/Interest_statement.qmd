@@ -1,0 +1,37 @@
+---
+title: "Project Step 1: Interest statement"
+author: "Shannon Cummings"
+format: pdf
+bibliography: bibliography.bib
+---
+
+### Brainstorming
+
+I am very interested in the connection between language and culture. I took a class with Dr. Bender on the subject and it was one of my favorites from my time here at Wake. I am also interested in literature, and working with Gutenbergr has shown that there are some interesting ways that corpora can be used to analyze literary works, authors, themes, etc. I am also interested in language change over time, so I might want my project to look at how language or themes in literature have changed over time, or how the language in literature over time might be able to show cultural change as well. 
+
+I was exploring on google scholar connections between corpus linguistics and literature and came across an article about the Corpus of the Canon of Western Literature and how it can be used for "culturomics" and stylistics [@green2017introducing]. I wasn't exactly sure what that meant so I looked more into linguistics and culturomics and I'm not sure how accurate this is but [Dictionary.com](https://www.dictionary.com/browse/culturomics) says:
+
+"culturomics
+: the study of human culture and cultural trends over time by means of quantitative analysis of words and phrases in a very large corpus of digitized texts."
+
+Apparently, culturomics can also "pinpoint periods of accelerated language change." This seems like something I would be really interested in exploring. Is it a legit thing though? Some sources criticize it and say its flawed...
+
+I think I am more specifically interested in the subjects and themes of literature and how they have changed, and what that might say about culture. For example: I took a literature class in high school and one of the texts we analyzed was Beowulf (the Heaney translation, arguably the best version). I wrote a paper at the end of the class about the role of Grendel's mother as a monster, and how monsters might change as the things we fear in society change over time. I don't know how accurate that is, but it could be interesting to revisit that idea using a corpus of literature that contains data like subject, theme, etc. I'm not sure exactly how I would go about that though. 
+
+### Interest Statement
+
+My main interests in language and linguistics lie in the ways language and culture are connected. Additionally, I am interested in how symbols and meanings in language shift and change over time. For this course project, I would like to sort of combine these two ideas and explore what language changes might reveal about cultural shifts over time. I plan to utilize literary corpora as a way to see what subjects or themes were popular at different times based on what was being written about and published. The themes most popular in texts published at different times could be a way to approximate what subjects or ideas were capturing the zeitgeist.
+
+Clarence Green might claim that my interest lies in what he referred to as "culturomics" [@green2017introducing]. He showed in his 2017 article that corpora COULD be used to do this kind of research. Research done by Mohamed Amine Boukaled, Benjamin Fagard, and Thierry Poibeau demonstrates how corpus lingusitics can be used to identify and analyze semantic change over time [@boukhaled2019dynamics].
+
+### Assessing Progress
+
+I think the biggest challenge of this assignment was getting the bibliography to work. I went through the process of editing, deleting, restarting, editing, and deleting my .bib file SO MANY TIMES because it wasnt appearing when I rendered my .qmd file. THEN I realized that it wasnt shoing up becuase I hadn't actally cited, and it will only appear after I referenced a certain work. AND THEEEN I was struggling to get the format of the citation correct, like when I was typing the barackets and the at sign etc it kept printing as (Personyear?) with a ? and I couldn't figure out WHY. I double checked that the bibtex were correct, that the file was formatted right, that my front matter was right, EVERYTHING. I even asked chatgpt for help and nothing was working. Then I realized that the name of the bibliobraphy file was red with an asterisk, and I went back and saved the changes to that file, and then everything worked. I literally just needed to save the changes...
+
+I always tend to have [Markdown Basics](https://quarto.org/docs/authoring/markdown-basics.html) up in the background when I am working on these assignments, just in case I need to quickly reference how to format something. This time, I used it to try out the term and definition format when I defined "culturomics." Just a fun little thing. 
+
+Having to sit down and really consider my interests in linguistics was helpful in orienting myself. I haven't thought about that high school literature class in years, but thinking about semantics and symbols and cultural change reminded me that I have been curious about this for a while now, even before I really understood what any of it meant. 
+
+
+### References
+

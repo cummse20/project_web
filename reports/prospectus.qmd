@@ -3,45 +3,438 @@ title: "Prospectus"
 date-modified: today
 date-format: medium
 author:
-  - name: "Your name"
-    email: youremail@school.edu
-    affiliation: "Your affiliation"
+  - name: "Shannon Cummings"
+    email: cummse20@wfu.edu
+    affiliation: "WFU"
 abstract: |
   This is a sample prospectus. It is a work in progress and will be updated as needed as the semester progresses.
 keywords:
-  - prospectus
-  - sample
+  - topic modeling
+  - Project Gutenberg
+  - exploratory study
+  - text mining
+  - corpus linguistics
+  - quantitative language analysis
 citation: true
 bibliography: ../bibliography.bib
 ---
 
 # Introduction
 
-This section introduces the topic of the prospectus, its relevance, and specific research question(s) or hypothesis(es) that will be addressed.
+As an anthropology major, I have always been very interested in the connection between language and culture. I took a class with Dr. Bender here at Wake on the subject and it was one of my favorites that I still think about in other courses.I also love literature, my favorite genre being 20th century dystopian. Working with Project Gutenberg in a Lab earlier this semester has shown me that there are some interesting ways that corpora can be used to analyze literary works, authors, themes, etc. 
+
+I have combined these two interests for this project, and have been exploring how thematic changes expressed in literature over time might correspond with cultural shifts around major historic events. Using Natural Language Processing methods, I will preform topic modeling to a corpus I curated of science-fiction works from Project Gutenberg. 
+
+This is an exploratory study, and exploratory research is important because they contribute to the overall understanding of different theories, help define problems, and collect data that can be used again in the future for more specific studies. The problem that I'm addressing is an application of existing methods to a dataset that I have curated.
 
 ## Literature review
 
-This section summarizes previous research related to the topic and identifies gaps that the current study aims to address. It is important to provide a comprehensive review of the literature to demonstrate the significance of the research question and the potential contributions of the study. The literature review should conclude with a clear statement of the research question or hypothesis that the study aims to address.
+My main interests in language and linguistics lie in the ways language and culture are connected. Additionally, I am interested in how symbols and meanings in language shift and change over time. Clarence Green might claim that my interest lies in what he referred to as "culturomics" or the study of cultural changes over time through quantitative text analysis and corpus linguistics [@green2017introducing].. Additionally, culturomics can also "pinpoint periods of accelerated language change." Research done by Mohamed Amine Boukaled, Benjamin Fagard, and Thierry Poibeau demonstrates how corpus lingusitics can be used to identify and analyze semantic change over time [@boukhaled2019dynamics].
+
+A lot of my goals for this project were inspired by the work of Borja Navarro-Colorado who preformed topic modeling on the Corpus of Spanish Golden Age Sonnets [@navarro2018poetic]. Navarro-Colorado was able to pull out the main themes from the poetry from this time period which could allow for further analysis of the cultural sentiment of the time period. Narrowing in on literature, work done by [@Ibrahim, Wesam Mohamed Abdelkhalek] provided an interesting guideline for the methodology of my research. He demonstrated how corpus linguistic can be effective in detecting major literary themes in fiction. The data for his study came from a corpus of the major works of Charles Dickens, and after reading his article, I began to wonder if I could curate a similar corpus with major works not from one author but for one genre. My goal was to examine only science fiction works, and Erik Smitterberg offered key insignt about limitations of genre as a parameter in corpus based historical linguistics. Accoring to him, "if the researcher is compiling a single genre corpus, delimiting the genre sampled is crucial in order to reach reliable results" [@smitterberg2015english].
+
+Based on my further literature review, I can see that it is possible to use corpus linguistics to analyse semantic domains and identify major themes in literature. Diachronic studies that intertwine historical linguistics, corpus linguistics, pragmatics, and sociolinguistics could be used to analyse changes in major themes in literature over time. For my research study, rather than attempting to identify moments of cultural shift over time based on changes in literary themes, I will look at literature published before and after moments of known cultural shifts to see if there is identifiable thematic shifts that correlate with the known cultural shift. I plan to subset a corpus of literature and focus on one genre, and compare the major themes identified through methods topic modeling or sentiment analysis.
+
+
 
 # Methods
 
-This section describes the data preparation and analysis methods that will be used to address the research question or hypothesis. It should include a detailed description of the data acquisition, data organization, and data enrichment process, as well as the feature selection and engineering, analysis techniques, and evaluation process.
+In the beginning, my goal was to use the standardized project gutenberg corpus as a dataset, then to subset the data first into all works within the genre of science fiction, and then create three subgroups based on time. The first time frame would range from 1990-1945, the second from 1945-1990, and the from 1990-present. The first time frame begins at the turn of the century and ends at the end of WWII. The second time frame begins at the end of WWII and ends with the end of the Cold War. The final time begins at the end of the Cold war and would include everything available to present day. My Hypothesis was that there will be dramatic thematic differences in the science fiction published in each time frame based on the cultural events that mark the beginning and end of each set.
+
+However, as my project began to take form, I realized that there is no publication date information provided in the metadata of the `gutenbergr` package so I had to modify my approach. Rather than using publication date, I will use the birthdate of the author as a way to approximate when they would have been publishing works. 
 
 ## Data preparation
 
-This section describes the process of acquiring, organizing, and enriching the data that will be used to address the research question or hypothesis. It should include a detailed description of the data sources, the process of collecting and cleaning the data, and any additional data enrichment steps that will be taken to prepare the data for analysis.
+
+```{r}
+#| label: loading packages
+#| message: false
+library(dplyr) # data manipulation
+library(readr) # data import/ export
+library(gutenbergr) # Project Gutenberg API
+library(skimr)      # descriptive statistics
+library(knitr)      # tables
+library(ggplot2)    # plotting
+library(tidytext) # text processing
+```
+
+```{r}
+glimpse(gutenberg_subjects)
+```
+```{r}
+subjects_df <-gutenberg_subjects
+
+write_csv(subjects_df, "data/gutenberg_subjects.csv")
+```
+
+I just made an original dataframe that includes all of the subjects for each work. By reading the description of the `gutenbergr` package, I can see that `gutenberg_subjects` includes a column for `gutenberg_id` which can be joined with `gutenberg_metadata`. So, my next step is to join the two sets of data so that I can see the publication.
+
+```{r}
+glimpse(gutenberg_metadata)
+
+metadata_df <-gutenberg_metadata
+
+write_csv(metadata_df, "data/gutenberg_metadata.csv")
+
+# Merge based on Gutenberg ID (gutenberg_id column)
+combined_data <- merge(metadata_df, subjects_df, by = "gutenberg_id", all.x = TRUE)
+```
+
+Next, there is a problem of "publication date." I haven't been able to find publication dates anywhere in the metadata, so I might have to adapt my strategy and use authors as a proxy for publication date. What I am going to do now is combine the `gutenberg_authors` data with the combined dataset I just created. 
+
+```{r}
+
+glimpse(gutenberg_authors)
+
+authors_df <-gutenberg_authors
+
+write_csv(authors_df, "data/gutenberg_authors.csv")
+
+# Merge based on Author ID (gutenberg_id column)
+authors_combined_data <- merge(authors_df, combined_data, by = "gutenberg_author_id", all.x = TRUE)
+```
+#### Now I need to figure out how to filter the data
+
+(@) What data from from the complete `authors_compiled_data` do I NOT need:
+* anything with the USA as the author
+* I dont think I need aliases?
+* ANything written by an author born before probably 1850
+  + this would make them about 50 by the year 1900 which is when I wanted my first timeframe to begin
+
+I need to figure out a way to group all of the different fiction-like subjects from `subjects_df` together under some general fiction tag. Then, I need to determine what data I know I 
+
+#### Change of plans?
+
+So I was exploring the `authors_compiled_data` a bit more and I saw that there is a column called `gutenberg_bookshelf`. What I am going to do now is maybe filter that column to see what all of the available bookshelves are that I can sort through. I went on the gutenberg.org website and saw that there are a few main bookshelves, one including Fiction. Under Fiction, there are two more "specific" bookhelves that I am interested in: Science Fiction and Precursors of Science Fiction. If these are under the `gutenberg_bookshelves` column, then I think my process got a little simpler than what I was trying to make it.
+
+
+```{r}
+
+
+# Filter works where 'gutenberg_bookshelf' contain 'Fiction'
+fiction_metadata <- metadata_df[grep("Fiction", metadata_df$gutenberg_bookshelf, ignore.case = TRUE), ]
+
+# View the subsetted dataframe
+head(fiction_metadata)
+
+```
+
+The table is showing that there are 8 works tagged as Fiction, but I know that this can't be true. On the website, it shows there are 1341 books tagged as Science Fiction, 55 books tagged as Science Fiction by Women, and 36 that are Precursors to Science Fiction. What I am going to try now is to see if I can ask for it to filter bookshelves that contain some variation of Science Fiction, even if there are other words in the bookshelf. 
+
+I couldnt figure out how to do this, so I asked chatGPT and this is what it told me to do: 
+If you want to create a dataset containing works that have the words "science fiction" somewhere within the gutenberg_bookshelves column, even if they are part of a longer string or surrounded by other words, you can use regular expressions (regex) in R to perform a more flexible search. Here's how you can accomplish this:
+
+```{r}
+
+# Filter works with 'science fiction' in bookshelf (using grepl with ignore.case)
+science_fiction_metadata <- metadata_df[grepl("science\\s+fiction", metadata_df$gutenberg_bookshelf, ignore.case = TRUE), ]
+
+# View the subsetted dataframe
+head(science_fiction_metadata)
+
+```
+
+What I want to do now is save this data as a csv file so I can access it later.
+
+```{r}
+write_csv(science_fiction_metadata, "data/science_fiction_metadata.csv")
+```
+
+
+#### Deriving further
+
+Ok, so what I need to do now is to cut down the data more so it fits the parameters I am looking for. Something that also just came to mind is that I plan to try to do semantic or topic modeling to the texts, so I think I am going to also filter out works that are marked as FALSE under the `has_text` column in the metadata.
+
+First: I will combine the `science_fiction_metadata` with some of the columns from `authors_df`. I want, the authors' birthdate and deathdates to be included in `science_fiction_metadata`.
+
+```{r}
+# Merge authors_df with science_fiction_metadata based on gutenberg_author_id
+merged_scifi_metadata <- merge(science_fiction_metadata, authors_df[, c("gutenberg_author_id", "birthdate", "deathdate")], 
+                         by = "gutenberg_author_id", all.x = TRUE)
+
+# View the merged metadata
+head(merged_scifi_metadata)
+
+```
+
+ Ok now Im going to write this as a csv so i have it for later. 
+
+```{r}
+write_csv(merged_scifi_metadata, "data/merged_scifi_metadata.csv")
+```
+
+Now what I want to do is remove all works whose authors' birthdate is before 1850.
+
+```{r}
+
+# Filter merged_scifi_metadata to remove works with authors' birthdate before 1850
+filtered_birthdate_metadata <- merged_scifi_metadata[!is.na(merged_scifi_metadata$birthdate) &merged_scifi_metadata$birthdate >= 1850, ]
+
+write_csv(filtered_birthdate_metadata, "data/filtered_birthdate_metadata.csv")
+
+```
+
+Now, I want to filter the data to show only works where the language is en and the has_test is TRUE
+
+```{r}
+
+# Filter to include only works where has_text is TRUE and language is 'en'
+filtered_en_scifi_post_1850 <- filtered_birthdate_metadata[filtered_birthdate_metadata$has_text == TRUE & filtered_birthdate_metadata$language == 'en', ]
+
+write_csv(filtered_en_scifi_post_1850, "data/filtered_en_scifi_post_1850.csv")
+
+```
+
+I am now ready to analyse works based on the authors birthrate which will hopefully I will be able to study trends based on time periods. 
+
 
 ## Data analysis
 
-This section describes the feature selection and engineering, analysis techniques, and evaluation process that will be used to address the research question or hypothesis. It should include a detailed description of the features that will be used in the analysis, the specific analysis techniques that will be applied, and the process of evaluating the results.
+The problem that I'm addressing is an application of existing methods to a dataset that I have curated. I think that what I am ending up doing is Natural Language Processing (NLP) to preform topic modeling on a corpus of my curation.
+
+```{r}
+# Load filtered_en_scifi_post_1850 from CSV file
+filtered_en_scifi_post_1850 <- read.csv("Copyofdata/filtered_en_scifi_post_1850.csv")
+
+```
+
+```{r}
+library(NLP) # Natural Language Processing 
+library(tm) # text mining
+library(topicmodels)
+```
+
+#### Downloading texts
+
+```{r}
+
+# Get unique Gutenberg IDs from filtered_en_scifi_post_1850 that I plan to download
+gutenberg_ids <- unique(filtered_en_scifi_post_1850$gutenberg_id)
+
+```
+
+
+```{r}
+
+all_works <- gutenberg_download(c(
+    36, 42, 62, 64, 68, 72, 96, 123, 126, 139, 285, 545, 551, 552, 553, 604, 605, 624, 765, 775, 1059, 1153, 1329, 1607,
+    1743, 2509,3479, 4920, 5699, 5703, 5965, 6630, 6903, 7052, 7303, 8086, 8199, 8673, 8681,  9055, 9194, 9862, 10002,
+    10662, 11696, 11870, 12750, 13423, 14301, 16721, 16921, 17026, 17027, 17028, 17029, 17030, 17138, 17355, 17870, 18172, 18109,
+    18137, 18139, 18151, 18172, 18257, 18261, 18342, 18346, 18361, 18431, 18458, 18460, 18492, 18584, 18632, 18641, 18668, 18719,
+    18768, 18800, 18807, 18814, 18817, 18831, 18846, 18855, 18861, 18949, 19000, 19029, 19066, 19067, 19076, 19090, 19102, 19111,
+    19141, 19145, 19158, 19174, 19231, 19333, 19362, 19370, 19445, 19471, 19474, 19476, 19478, 19651, 19660, 19726, 19963,
+    19964, 20121, 20147, 20154, 20212, 20519, 20553, 20649, 20659, 20707, 20726, 20727, 20728, 20739, 20782, 20788, 20796, 20838,
+    20856, 20857, 20859, 20869, 20898, 20919, 20920, 20988, 21051, 21094, 21279, 21510, 21627, 21638, 21647, 21670, 21782, 21783,
+    21897, 21988, 22073, 22102, 22132, 22154, 22171, 22216, 22218, 22226, 22239, 22301, 22332, 22342, 22346, 22426, 22467, 22512,
+    22513, 22524, 22526, 22527, 22538, 22540, 22541, 22544, 22549, 22559, 22560, 22579, 22585, 22590, 22596, 22597, 22623, 22629,
+    22701, 22754, 22763, 22767, 22866, 22869, 22867, 22875, 22876, 22881, 22882, 22890, 22892, 22893, 22895, 22897, 22958, 22966,
+    22967, 22997, 23028, 23091, 23099, 23102, 23104, 23146, 23147, 23153, 23159, 23160, 23161, 23162, 23164, 23194, 23197, 23198,
+    23210, 23232, 23339, 23379, 23426, 23439, 23534, 23561, 23588, 23599, 23612, 23636, 23657, 23669, 23678, 23688, 23731, 23762,
+    23764, 23767, 23790, 23791, 23799, 23831, 23868, 23872, 23882, 23884, 23889, 23929, 23942, 23960, 24005, 24035, 24054, 24064,
+    24091, 24104, 24119, 24122, 24135, 24149, 24150, 24151, 24152, 24166, 24180, 24187, 24189, 24192, 24196, 24198, 24221, 24246,
+    24247, 24274, 24275, 24276, 24277, 24278, 24290, 24302, 24370, 24375, 24382, 24392, 24395, 24397, 24399, 24436, 24444, 24521,
+    24529, 24558, 24567, 24707, 24721, 24723, 24749, 24779, 24684, 24870, 24949, 24958, 24695, 24975, 25024, 25038, 25035, 25051,
+    25061, 25067, 25086, 25166, 25234, 25438, 25550, 25567, 25627, 25628, 25629, 25644, 25684, 25776, 26862, 26066, 26093,
+    26109, 26168, 26174, 26180, 26191, 26206, 26292, 26332, 26521, 26536, 26569, 26741, 26743, 26751, 26772, 26782, 26843, 26885,
+    26856, 26857, 26890, 26906, 26917, 26936, 26941, 26957, 26966, 26967, 26988, 26989, 27013, 27019, 27053, 27089, 27110, 27143,
+    27248, 27365, 27393, 27444, 27462, 27491, 27492, 27588, 27595, 27609, 27645, 27730, 27756, 27921, 27968, 28030, 20831, 28045,
+    28047, 28062, 28063, 28111, 28118, 28119, 28156, 28215, 28346, 28437, 28438, 28451, 28453, 28486, 28515, 28516, 28518, 28535,
+    28550, 28554, 28583, 28628, 28643, 28644, 28647, 28650, 28698, 28705, 28767, 28832, 28883, 28892, 28893, 28894, 28922, 28924,
+    28954, 28976, 29027, 29038, 29046, 29053, 29059, 29060, 29069, 29118, 29132, 29135, 29138, 29139, 29142, 29149, 29159, 29168,
+    29170, 29177, 29190, 29193, 29195, 29196, 29202, 29204, 29206, 29209, 29240, 29242, 29271, 29271, 29238, 29290, 29293, 29299,
+    29303, 29308, 29309, 29321, 29322, 29326, 29353, 29355, 29384, 29389, 29390, 29401, 29408, 29410, 29416, 29418, 29432, 29437,
+    29445, 29446, 29448, 29455, 29457, 29458, 29466, 29471, 29475, 29487, 29488, 29492, 29503, 29504, 29509, 29525, 29542, 29548,
+    29559, 29578, 29579, 29614, 29618, 29619, 29620, 29625, 29632, 29643, 29662, 29680, 29698, 29702, 29742, 29750, 29771, 29789,
+    29790, 29791, 29793, 29794, 29832, 29876, 29889, 29908, 29910, 29931, 29936, 29940, 29947, 29948, 29954, 29962, 29965, 29966,
+    29987, 29989, 29990, 29994, 30002, 30014, 30015, 30019, 30029, 30035, 30044, 30045, 30063, 30086, 30140, 30170, 30991, 30214,
+    30234, 30240, 30242, 30251, 30255, 30559, 30267, 30288, 30304, 30308, 30311, 30322, 30329, 30330, 30334, 30337, 30338, 30348,
+    30353, 30371, 30380, 30383, 30386, 30398, 30399, 30408, 30416, 30427, 30438, 30474, 30576, 30491, 30493, 30497, 30583, 30637,
+    30679, 30715, 30728, 30742, 30764, 30767, 30770, 30796, 30816, 30828, 30832, 30833, 30869, 30884, 30885, 30901, 30971, 31062,
+    31207, 31215, 31262, 31286, 31287, 31324, 31355, 31469, 31501, 31516, 31547, 31583, 31587, 31599, 31619, 31626, 31644, 31648,
+    31651, 31664, 31665, 31686, 31701, 31703, 31716, 31736, 31767, 31778, 31840, 31841, 31897, 31922, 31929, 31948, 31956, 31979,
+    31981, 32004, 32026, 32029, 32032, 32040, 32041, 32054, 32067, 32077, 32078, 32079, 32088, 32104, 32108, 32124, 32127, 32131,
+    32133, 32134, 32149, 32150, 32154, 32162, 32181, 32209, 32212, 32230, 32237, 32243, 32272, 32317, 32321, 32339, 32344, 32346,
+    32347, 32351, 32353, 32359, 32360, 32395, 32398, 32436, 32447, 32486, 32498, 32522, 32530, 32541, 32551, 32563, 32574, 32579,
+    32584, 32587, 32592, 32613, 32637, 32651, 32654, 32657, 32664, 32665, 32676, 32683, 32684, 32688, 32696, 32705, 32706, 32735,
+    32737, 32748, 32764, 32780, 32801, 32820, 32825, 32827, 32828, 32832, 32833, 32847, 32890, 32903, 32905, 32906, 33642, 33644,
+    33662, 33790, 33839, 33842, 33850, 33854, 33871, 33934, 33969, 34420, 35425, 35759, 37448, 37653, 39572, 40953, 40954, 40961,
+    40964, 40968, 40969, 40970, 40993, 41027, 41049, 41062, 41064, 41084, 41562, 41565, 41586, 41622, 41627, 41637, 41714, 41905,
+    41981, 42111, 42182, 42183, 42188, 42196, 42209, 42227, 42236, 42254, 42259, 42664, 42901, 41914, 42987, 43041, 43046, 43048,
+    43235, 49462, 49525, 49531, 49651, 49762, 49767, 49779, 49809, 49826, 49838, 49897, 49901, 50022, 50063, 50133, 50138, 50290,
+    50406, 50441, 50449, 50561, 50566, 50571, 50585, 50622, 50668, 50682, 50702, 50713, 50719, 50736, 50753, 50766, 50774, 50783,
+    50796, 50802, 50818, 50819, 50827, 50834, 50838, 30844, 50847, 40848, 50863, 50868, 50872, 50876, 50877, 50884, 50885, 50890,
+    50893, 50904, 50905, 50923, 50924, 50928, 50935, 50940, 50948, 50959, 50969, 50971, 50981, 50988, 50998, 50999, 51008, 51009,
+    51027, 50128, 50137, 50146, 50147, 51050, 51053, 51072, 51075, 51082, 51091, 51092, 51101, 51102, 51112, 51115, 51122, 51125,
+    51126, 51129, 51132, 51140, 51150, 51152, 51153, 51168, 51170, 51171, 51184, 51185, 51193, 51194, 51201, 51202, 51203, 51210,
+    51231, 51233, 51240, 51241, 51247, 51249, 51256, 51258, 51267, 51268, 51273, 51274, 51286, 51288, 51295, 51296, 51305, 51310,
+    51320, 51331, 51335, 51337, 51342, 51344, 51350, 51351, 51353, 51361, 51363, 51379, 51380, 51395, 51397, 51398, 51408, 51413,
+    51414, 51421, 51433, 51434, 51435, 51436, 51445, 51449, 51461, 51475, 51482, 51483, 51493, 51499, 51508, 51509, 51518, 51519,
+    51530, 51531, 51534, 51545, 51549, 51570, 51571, 51574, 51576, 51589, 51596, 51597, 51603, 51605, 51615, 51622, 51623, 51651,
+    51656, 51657, 51662, 51663, 51668, 51681, 51688, 51687, 51699, 51712, 51713, 51726, 51735, 51741, 51751, 51752, 51758, 51759,
+    51768, 51774, 51781, 51782, 51779, 51801, 51822, 51824, 51832, 51833, 51834, 51842, 51852, 51854, 51855, 51866, 51867, 51868,
+    52009, 52167, 52326, 52574
+))
+```
+
+```{r}
+write_csv(all_works, "Copyofdata/all_works.csv")
+```
+
+#### Creating Corpus
+
+##### Combining text for each work
+
+I will combine the text data so that each row corresponds to a single work. I have to aggregate the text based on the `gutenberg_id`.
+
+```{r}
+library(dplyr)
+
+# Group by gutenberg_id and combine text into a single string
+corpus <- all_works %>%
+  group_by(gutenberg_id) %>%
+  summarise(text = paste(text, collapse = " "))
+
+```
+
+
+##### Include relevant metadata
+
+```{r}
+# Merge metadata into the corpus based on gutenberg_id
+corpus <- merge(corpus, filtered_en_scifi_post_1850[, c("gutenberg_id", "title", "author", "birthdate")], 
+                by = "gutenberg_id", all.x = TRUE)
+
+```
+
+##### Processing the text
+
+I ran into so many issues when attempting to process the text do things like make everything lowercase and remove punctuation. I had to ask chatGPT for help and it said I might have to try a Vector Corpus approach instead. So:
+
+```{r}
+library(tm)
+
+# Create a VCorpus from the text data
+corpus <- VCorpus(VectorSource(corpus$text))
+
+```
+
+This worked no problem. Now for the real test:
+
+```{r}
+# Convert text to lowercase
+corpus <- tm_map(corpus, content_transformer(tolower))
+
+# Remove punctuation
+corpus <- tm_map(corpus, removePunctuation)
+
+# Remove numbers
+corpus <- tm_map(corpus, removeNumbers)
+
+# Remove stopwords
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+
+# Strip whitespace
+corpus <- tm_map(corpus, stripWhitespace)
+
+```
+
+It didnt work and I dont know what to do so chat GPT is going to help me trouble shoot:
+
+First, inspect text content
+
+```{r}
+# Print a sample of text content
+sample_text <- content(corpus[[1]])  # Print the content of the first document in the corpus
+print(sample_text)
+
+```
+
+It all looks normal to I need to try the text processing again
+
+```{r}
+library(tm)
+
+# Convert text to lowercase
+corpus <- tm_map(corpus, content_transformer(tolower))
+
+# Remove punctuation
+corpus <- tm_map(corpus, removePunctuation)
+
+# Remove numbers
+corpus <- tm_map(corpus, removeNumbers)
+
+# Remove stopwords
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+
+# Strip whitespace
+corpus <- tm_map(corpus, stripWhitespace)
+
+```
+
+The text processing still isnt working so there may be an encoding error.
+
+```{r}
+# Convert text data to UTF-8 encoding
+corpus <- tm_map(corpus, content_transformer(function(x) iconv(x, to = "UTF-8", sub = "byte")))
+
+```
+
+I did this to convert text data to UTF-8 encoding which would replace any invalid characters with some sort of suitable representation. Im going to be honest though, if project gutenberg is popular for text analysis stuff, I dont understand how there would a an encoding error. Wouldnt they have been able to make it normal? I guess Im not sure exactly how this works. 
+
+```{r}
+# Convert text to lowercase
+corpus <- tm_map(corpus, content_transformer(tolower))
+
+# Remove punctuation
+corpus <- tm_map(corpus, removePunctuation)
+
+# Remove numbers
+corpus <- tm_map(corpus, removeNumbers)
+
+# Remove stopwords
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+
+# Strip whitespace
+corpus <- tm_map(corpus, stripWhitespace)
+
+```
+
+It worked. Now just to inspect what I've done - the "preprocessed" text content :
+
+```{r}
+# Inspect a sample of preprocessed text content
+sample_preprocessed_text <- content(corpus[[1]])  # Print the preprocessed content of the first document
+print(sample_preprocessed_text)
+```
+
+EXCELLENT. 
+
+#### Steps for topic modeling
+
+##### Creating the Document-Term Matric
+
+```{r}
+# Create a Document-Term Matrix (DTM) from the preprocessed VCorpus
+dtm <- DocumentTermMatrix(corpus)
+
+```
+
+SUCCESS. The rows represent each document and the columns represent terms/words. I the matrix, the cells will display the frequency count for each word.
+
+##### Save the DTM
+
+```{r}
+# Save the Document-Term Matrix (DTM) as an RData file
+save(dtm, file = "topic_modeling/document_term_matrix.RData")
+
+```
+
+These steps have provided me with data I can use for analysis. I plan to preform topic modeling based on the data from the DTM. 
 
 # Expected results
 
-This section presents the hypothesized findings based on the research question and analysis methods. It should include a clear statement of the expected results and their potential implications for the field of Linguistics and language science.
+As I mentioned before, I picked the dates because fo major global historical event that took place those years. People born in 1850-1899 would have grown up at the end of the 19th century and I expect to see dramaticlaly different themes emerge from their works than that of writers a century later. Then next group would be born 1900-1945, and would have grown up a part of what Eurpe remembers as the Lost Generation. The penultimate group would have been born 1945-1989 and would have grown up during the Cold War. The final group would have been born from 1990-present, after the "end" of the cold war, at the turn of Y2K, and with the emergence of rapidly imporving technology. I cant say excatly *what* differences I would have expected to see, but my hypothesis was simply that there would be clear differences. I expect this based on the different circumstances each generation of writers would have grown up in, and how that may have affected their perspective, where they found inspiration, and what they felt would be well recieved in literature at the time.
 
-# Communication plan
-
-This section describes the plan for reporting, presenting, and sharing the results of the study. It should include a detailed description of the intended audience for the study, the format of the final report, and any plans for sharing the results with the broader community.
 
 # Conclusion
 
@@ -49,8 +442,20 @@ This section provides a summary of the research proposal and its potential impac
 
 # References
 
-This section includes a list of sources cited in the prospectus. It should be formatted according to the citation style used in the field of Linguistics and language science.
+
 
 # Appendix {.appendix}
 
-This section includes any additional information that is relevant to the prospectus, such as data sources, code, or other supplementary materials.
+For this project I used several R packages to help sift through my data set:
+
+* `dplyr` for data manipulation
+* `readr` for data import/ export
+* `gutenbergr` which is the Project Gutenberg API
+* `skimr` for descriptive statistics
+* `knitr` for tables
+* `ggplot2` for plotting
+* `tidytext` for text processing
+* `NLP` for Natural Language Processing 
+* `tm` for making the corpus and text mining 
+* `topicmodels` for latent dirichlet allocation
+

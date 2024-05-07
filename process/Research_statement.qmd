@@ -1,0 +1,119 @@
+---
+title: "Research Statement"
+author: "Shannon Cummimgs"
+format: html
+bibliography: bibliography.bib
+---
+
+## Brainstorming
+
+#### Review of interest statement
+
+* Main interests
+  + language connection with culture
+  + semantic shift
+  + symbolism
+  + literature
+
+As I wrote in my interest statement: I would like to combine symbols in literature and language change over time to look at potential cultural shifts
+
+#### Expanded literature review
+
+(@) "Utilizing corpus stylistics to facilitate literary analysis: An assessment of the effectiveness of semantic domains in identifying major literary themes in a selection of Charles Dickens novels" [@ibrahim2022utilizing]
+* Aims of study
+  + "It aims to explore how corpus linguistic procedures, particularly semantic domains, can be effective in detecting major literary themes in fiction."
+* Main findings
+  + corpus linguistics CAN be effective for analyzing "semantic domains" in literature and identifying major themes
+* Datasets used
+  + 5 different corpora
+    - one for each of Dickens's four major works, and one compiling all four together
+* Analysis approach and statistical methods
+  + Wmatrix 5 used with BNC Sampler-Written as a reference corpus to extrace somantic domains from each corpus
+  + literature about the major themes of each work was reviewed and compared with what was reflected in the corpus analysis
+  + analysis of the extent to which the corpus analysis effectively represented the major themes
+* Debates/uncertainties/limitations/gaps
+  + this was done comparing major works of a single author, but would it work in indentifying themes across different authors? 
+    - could I achieve something like this with the gutenberg database?
+
+(@) "On poetic topic modeling: extracting themes and motifs from a corpus of Spanish poetry" [@navarro2018poetic]
+* Aims of study
+  + QUESTION: is it possible to apply topic modeling to poetry?
+  + apply Latent Dirichlet Allocation (LDA) topic modeling to corpus of spanish sonnets
+  + extract representative topics from the sonnets
+  + analyze what kinds of topics can be extracted from similar corpora
+* Main findings
+  + lemmatization not advisable, poetic features lost in process
+  + standard LDA algorithm better for for short texts (rather than a specific version, LF-LDA)
+  + there are two kinds of semantic relations:
+    - LDA can represent subject/theme of poem
+    - LDA can represent poem motif
+* Data sets used
+  + Corpus of Spanish Golden Age Sonnets
+* Analysis approach and statistical methods
+  + applying Latent Dirichlet Allocation (LDA) to a corpus of poetry
+  + LDA topic modeling based on on textual use of words
+    - a distributional semantic model
+    -word meanings determined by contexts in which words appear
+* Debates/uncertainties/limitations/gaps
+  + just some notes
+    - focuses on one time period
+    - could this be used to compare across different time periods?
+    - would this work for longer poems? 
+    - how might this be affected by different languages?
+
+(@) "English genres in diachronic corpus linguistics" [@smitterberg2015english]
+* Aims of study
+  + to explore the limitations of using genre as a parameter in corpus based historical linguistics
+  + to explore potential conflicts between representativity and comparability
+  + to define genre and understand why it has become a central concept in historical linguistics
+* Main findings
+  + "If the researcher is compiling a singlegenre corpus, delimiting the genre sampled is crucial in order to reach
+reliable results."
+  + the authors define genre as the category of text that is defined by "extralinguistic grounds"
+  + if a corpus is REPRESENTATIVE:
+    - the study of that corpus can be used as proxy to study of some entire language or variety of a language"
+  + COMPARABILITY:
+    - the extent to which "sets of material are equivalent except for one
+single variable"
+    - the variable in historical linguistics is typically time
+  + these two concepts may clash as genres change over time
+  + "Alternatively, grouping several genres together into hyperonymic entities can enable scholars to collect roughly comparable text categories if not all genres are attested in all periods sampled. The prototypical text categories in the Helsinki Corpus can be used as an example
+of this; for example, the category Imaginative Narration covers genres
+such as Fiction, Romance, and Travelogue, which suggests that these
+genres share some features that may make them roughly comparable if
+one or several of them are missing from some period samples."
+* Debates/uncertainties/limitations/gaps
+  + should it be assumed that reliability and comparability could clash if the variable time is only covering about 100 years? is that long enough for a genre to evolve/change (not regarding themes within the works in the genre but as explored in the article??)
+
+(@) "Sociopragmatic annotation: New directions and possibilities in historical corpus linguistics" [@archer2003sociopragmatic]
+* Aims of study
+  + to show how corpus analysis can be used in pragmatic research
+  + to demonstrate how a "sophisticated annotation scheme can help bridge the gap between text and contexts"
+  + the study intertwines pragmatics, sociolinguistics, historical linguistics, and corpus linguistics
+* Main findings
+  + fields and values can be devised to describe a particular socio-historical context
+  + placing more "static information" in the header to reduce the amount of information carried in each tag
+* Datasets used
+  + corpus of english dialogues (CED) 1560-1760
+  + a subsetted corpus called the spciopragmatic corpus (SPC)
+    - covering 5 subperiods of the CED 
+* Analysis approach and statistical methods
+  + corpus annotation
+  + devising and implementing a tagging system that would allow a "systematic appreach to context" and "sociopragmatic analysis"
+  + text encoding initiative 
+* Debates/uncertainties/limitations/gaps
+  + the corpus/dataset they ended up using was quite small
+
+## Draft of Research Statement
+
+Based on my further literature review, it is possible to use corpus linguistics to analyse semantic domains and identify major themes in literature. Diachronic studies that intertwine historical linguistics, corpus linguistics, pragmatics, and sociolinguistics could be used to analyse changes in major themes in literature over time. For my research study, rather than attempting to identify moments of cultural shift over time based on changes in literary themes, I will look at literature published before and after moments of known cultural shifts to see if there is identifiable thematic shifts that correlate with the known cultural shift. I plan to subset a corpus of literature and focus on one genre, and compare the major themes identified through methods topic modeling or sentiment analysis.
+
+Right now, my goal is to use the standardized project gutenberg corpus as a dataset, then to subset the data first into all works within the genre of science fiction, and then create three subgroups based on time. The first time frame will range from 1990-1945, the second from 1945-1990, and the from 1990-present. The first time frame begins at the turn of the century and ends at the end of WWII. The second time frame begins at the end of WWII and ends with the end of the Cold War. The final time begins at the ed of the Cold war and will include everything available to present day. My Hypothesis is that there will be dramatic thematic differences in the science fiction published in each time frame based on the cultural events that mark the beginning and end of each set.
+
+This is an exploratory study, and exploratory research is important because they contribute to the overall understanding of different theories, help define problems, and collect data that can be used again in the future for more specific studies. 
+
+## Assessing Progress
+
+I think that my biggest challenge moving foward will be figuiring how to do what I want to do with the gutenberg dataset. I am wondering if Ill need to create 3 subcorpora and use something like wmatrix 5 to copmare them, or if i can just use the big corpus broken in to my three time frames and compare the themes that way. 
+
+## References

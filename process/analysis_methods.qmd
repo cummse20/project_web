@@ -1,0 +1,267 @@
+---
+title: "Project Step 4: Analysis Methods"
+author: "Shannon Cummings"
+format: html
+---
+
+```{r}
+#| label: loading packages
+#| message: false
+library(dplyr) # data manipulation
+library(readr) # data import/ export
+library(gutenbergr) # Project Gutenberg API
+library(skimr)      # descriptive statistics
+library(knitr)      # tables
+library(ggplot2)    # plotting
+library(tidytext) # text processing
+
+```
+
+## Brainstorming
+
+The problem that I'm addressing is an application of existing methods to a dataset that I have curated. I think that what I am ending up doing is Natural Language Processing (NLP) to preform topic modeling on a corpus of my curation.
+
+```{r}
+# Load filtered_en_scifi_post_1850 from CSV file
+filtered_en_scifi_post_1850 <- read.csv("Copyofdata/filtered_en_scifi_post_1850.csv")
+
+```
+
+```{r}
+library(NLP) # Natural Language Processing 
+library(tm) # text mining
+library(topicmodels)
+```
+
+## Downloading texts
+
+```{r}
+
+# Get unique Gutenberg IDs from filtered_en_scifi_post_1850 that I plan to download
+gutenberg_ids <- unique(filtered_en_scifi_post_1850$gutenberg_id)
+
+```
+
+
+```{r}
+
+all_works <- gutenberg_download(c(
+    36, 42, 62, 64, 68, 72, 96, 123, 126, 139, 285, 545, 551, 552, 553, 604, 605, 624, 765, 775, 1059, 1153, 1329, 1607,
+    1743, 2509,3479, 4920, 5699, 5703, 5965, 6630, 6903, 7052, 7303, 8086, 8199, 8673, 8681,  9055, 9194, 9862, 10002,
+    10662, 11696, 11870, 12750, 13423, 14301, 16721, 16921, 17026, 17027, 17028, 17029, 17030, 17138, 17355, 17870, 18172, 18109,
+    18137, 18139, 18151, 18172, 18257, 18261, 18342, 18346, 18361, 18431, 18458, 18460, 18492, 18584, 18632, 18641, 18668, 18719,
+    18768, 18800, 18807, 18814, 18817, 18831, 18846, 18855, 18861, 18949, 19000, 19029, 19066, 19067, 19076, 19090, 19102, 19111,
+    19141, 19145, 19158, 19174, 19231, 19333, 19362, 19370, 19445, 19471, 19474, 19476, 19478, 19651, 19660, 19726, 19963,
+    19964, 20121, 20147, 20154, 20212, 20519, 20553, 20649, 20659, 20707, 20726, 20727, 20728, 20739, 20782, 20788, 20796, 20838,
+    20856, 20857, 20859, 20869, 20898, 20919, 20920, 20988, 21051, 21094, 21279, 21510, 21627, 21638, 21647, 21670, 21782, 21783,
+    21897, 21988, 22073, 22102, 22132, 22154, 22171, 22216, 22218, 22226, 22239, 22301, 22332, 22342, 22346, 22426, 22467, 22512,
+    22513, 22524, 22526, 22527, 22538, 22540, 22541, 22544, 22549, 22559, 22560, 22579, 22585, 22590, 22596, 22597, 22623, 22629,
+    22701, 22754, 22763, 22767, 22866, 22869, 22867, 22875, 22876, 22881, 22882, 22890, 22892, 22893, 22895, 22897, 22958, 22966,
+    22967, 22997, 23028, 23091, 23099, 23102, 23104, 23146, 23147, 23153, 23159, 23160, 23161, 23162, 23164, 23194, 23197, 23198,
+    23210, 23232, 23339, 23379, 23426, 23439, 23534, 23561, 23588, 23599, 23612, 23636, 23657, 23669, 23678, 23688, 23731, 23762,
+    23764, 23767, 23790, 23791, 23799, 23831, 23868, 23872, 23882, 23884, 23889, 23929, 23942, 23960, 24005, 24035, 24054, 24064,
+    24091, 24104, 24119, 24122, 24135, 24149, 24150, 24151, 24152, 24166, 24180, 24187, 24189, 24192, 24196, 24198, 24221, 24246,
+    24247, 24274, 24275, 24276, 24277, 24278, 24290, 24302, 24370, 24375, 24382, 24392, 24395, 24397, 24399, 24436, 24444, 24521,
+    24529, 24558, 24567, 24707, 24721, 24723, 24749, 24779, 24684, 24870, 24949, 24958, 24695, 24975, 25024, 25038, 25035, 25051,
+    25061, 25067, 25086, 25166, 25234, 25438, 25550, 25567, 25627, 25628, 25629, 25644, 25684, 25776, 26862, 26066, 26093,
+    26109, 26168, 26174, 26180, 26191, 26206, 26292, 26332, 26521, 26536, 26569, 26741, 26743, 26751, 26772, 26782, 26843, 26885,
+    26856, 26857, 26890, 26906, 26917, 26936, 26941, 26957, 26966, 26967, 26988, 26989, 27013, 27019, 27053, 27089, 27110, 27143,
+    27248, 27365, 27393, 27444, 27462, 27491, 27492, 27588, 27595, 27609, 27645, 27730, 27756, 27921, 27968, 28030, 20831, 28045,
+    28047, 28062, 28063, 28111, 28118, 28119, 28156, 28215, 28346, 28437, 28438, 28451, 28453, 28486, 28515, 28516, 28518, 28535,
+    28550, 28554, 28583, 28628, 28643, 28644, 28647, 28650, 28698, 28705, 28767, 28832, 28883, 28892, 28893, 28894, 28922, 28924,
+    28954, 28976, 29027, 29038, 29046, 29053, 29059, 29060, 29069, 29118, 29132, 29135, 29138, 29139, 29142, 29149, 29159, 29168,
+    29170, 29177, 29190, 29193, 29195, 29196, 29202, 29204, 29206, 29209, 29240, 29242, 29271, 29271, 29238, 29290, 29293, 29299,
+    29303, 29308, 29309, 29321, 29322, 29326, 29353, 29355, 29384, 29389, 29390, 29401, 29408, 29410, 29416, 29418, 29432, 29437,
+    29445, 29446, 29448, 29455, 29457, 29458, 29466, 29471, 29475, 29487, 29488, 29492, 29503, 29504, 29509, 29525, 29542, 29548,
+    29559, 29578, 29579, 29614, 29618, 29619, 29620, 29625, 29632, 29643, 29662, 29680, 29698, 29702, 29742, 29750, 29771, 29789,
+    29790, 29791, 29793, 29794, 29832, 29876, 29889, 29908, 29910, 29931, 29936, 29940, 29947, 29948, 29954, 29962, 29965, 29966,
+    29987, 29989, 29990, 29994, 30002, 30014, 30015, 30019, 30029, 30035, 30044, 30045, 30063, 30086, 30140, 30170, 30991, 30214,
+    30234, 30240, 30242, 30251, 30255, 30559, 30267, 30288, 30304, 30308, 30311, 30322, 30329, 30330, 30334, 30337, 30338, 30348,
+    30353, 30371, 30380, 30383, 30386, 30398, 30399, 30408, 30416, 30427, 30438, 30474, 30576, 30491, 30493, 30497, 30583, 30637,
+    30679, 30715, 30728, 30742, 30764, 30767, 30770, 30796, 30816, 30828, 30832, 30833, 30869, 30884, 30885, 30901, 30971, 31062,
+    31207, 31215, 31262, 31286, 31287, 31324, 31355, 31469, 31501, 31516, 31547, 31583, 31587, 31599, 31619, 31626, 31644, 31648,
+    31651, 31664, 31665, 31686, 31701, 31703, 31716, 31736, 31767, 31778, 31840, 31841, 31897, 31922, 31929, 31948, 31956, 31979,
+    31981, 32004, 32026, 32029, 32032, 32040, 32041, 32054, 32067, 32077, 32078, 32079, 32088, 32104, 32108, 32124, 32127, 32131,
+    32133, 32134, 32149, 32150, 32154, 32162, 32181, 32209, 32212, 32230, 32237, 32243, 32272, 32317, 32321, 32339, 32344, 32346,
+    32347, 32351, 32353, 32359, 32360, 32395, 32398, 32436, 32447, 32486, 32498, 32522, 32530, 32541, 32551, 32563, 32574, 32579,
+    32584, 32587, 32592, 32613, 32637, 32651, 32654, 32657, 32664, 32665, 32676, 32683, 32684, 32688, 32696, 32705, 32706, 32735,
+    32737, 32748, 32764, 32780, 32801, 32820, 32825, 32827, 32828, 32832, 32833, 32847, 32890, 32903, 32905, 32906, 33642, 33644,
+    33662, 33790, 33839, 33842, 33850, 33854, 33871, 33934, 33969, 34420, 35425, 35759, 37448, 37653, 39572, 40953, 40954, 40961,
+    40964, 40968, 40969, 40970, 40993, 41027, 41049, 41062, 41064, 41084, 41562, 41565, 41586, 41622, 41627, 41637, 41714, 41905,
+    41981, 42111, 42182, 42183, 42188, 42196, 42209, 42227, 42236, 42254, 42259, 42664, 42901, 41914, 42987, 43041, 43046, 43048,
+    43235, 49462, 49525, 49531, 49651, 49762, 49767, 49779, 49809, 49826, 49838, 49897, 49901, 50022, 50063, 50133, 50138, 50290,
+    50406, 50441, 50449, 50561, 50566, 50571, 50585, 50622, 50668, 50682, 50702, 50713, 50719, 50736, 50753, 50766, 50774, 50783,
+    50796, 50802, 50818, 50819, 50827, 50834, 50838, 30844, 50847, 40848, 50863, 50868, 50872, 50876, 50877, 50884, 50885, 50890,
+    50893, 50904, 50905, 50923, 50924, 50928, 50935, 50940, 50948, 50959, 50969, 50971, 50981, 50988, 50998, 50999, 51008, 51009,
+    51027, 50128, 50137, 50146, 50147, 51050, 51053, 51072, 51075, 51082, 51091, 51092, 51101, 51102, 51112, 51115, 51122, 51125,
+    51126, 51129, 51132, 51140, 51150, 51152, 51153, 51168, 51170, 51171, 51184, 51185, 51193, 51194, 51201, 51202, 51203, 51210,
+    51231, 51233, 51240, 51241, 51247, 51249, 51256, 51258, 51267, 51268, 51273, 51274, 51286, 51288, 51295, 51296, 51305, 51310,
+    51320, 51331, 51335, 51337, 51342, 51344, 51350, 51351, 51353, 51361, 51363, 51379, 51380, 51395, 51397, 51398, 51408, 51413,
+    51414, 51421, 51433, 51434, 51435, 51436, 51445, 51449, 51461, 51475, 51482, 51483, 51493, 51499, 51508, 51509, 51518, 51519,
+    51530, 51531, 51534, 51545, 51549, 51570, 51571, 51574, 51576, 51589, 51596, 51597, 51603, 51605, 51615, 51622, 51623, 51651,
+    51656, 51657, 51662, 51663, 51668, 51681, 51688, 51687, 51699, 51712, 51713, 51726, 51735, 51741, 51751, 51752, 51758, 51759,
+    51768, 51774, 51781, 51782, 51779, 51801, 51822, 51824, 51832, 51833, 51834, 51842, 51852, 51854, 51855, 51866, 51867, 51868,
+    52009, 52167, 52326, 52574
+))
+```
+
+```{r}
+write_csv(all_works, "Copyofdata/all_works.csv")
+```
+
+## Creating Corpus
+
+### Combining text for each work
+
+I will combine the text data so that each row corresponds to a single work. I have to aggregate the text based on the `gutenberg_id`.
+
+```{r}
+library(dplyr)
+
+# Group by gutenberg_id and combine text into a single string
+corpus <- all_works %>%
+  group_by(gutenberg_id) %>%
+  summarise(text = paste(text, collapse = " "))
+
+```
+
+YAY it worked first try
+
+
+### Include relevant metadata
+
+```{r}
+# Merge metadata into the corpus based on gutenberg_id
+corpus <- merge(corpus, filtered_en_scifi_post_1850[, c("gutenberg_id", "title", "author", "birthdate")], 
+                by = "gutenberg_id", all.x = TRUE)
+
+```
+
+### Processing the text
+
+I ran into so many issues when attempting to process the text do things like make everything lowercase and remove punctuation. I had to ask chatGPT for help and it said I might have to try a Vector Corpus approach instead. So:
+
+```{r}
+library(tm)
+
+# Create a VCorpus from the text data
+corpus <- VCorpus(VectorSource(corpus$text))
+
+```
+
+This worked no problem. Now for the real test:
+
+```{r}
+# Convert text to lowercase
+corpus <- tm_map(corpus, content_transformer(tolower))
+
+# Remove punctuation
+corpus <- tm_map(corpus, removePunctuation)
+
+# Remove numbers
+corpus <- tm_map(corpus, removeNumbers)
+
+# Remove stopwords
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+
+# Strip whitespace
+corpus <- tm_map(corpus, stripWhitespace)
+
+```
+
+It didnt work and I dont know what to do so chat GPT is going to help me trouble shoot:
+
+1. Inspect text content
+
+```{r}
+# Print a sample of text content
+sample_text <- content(corpus[[1]])  # Print the content of the first document in the corpus
+print(sample_text)
+
+```
+
+It all looks normal to I need to try the text processing again
+
+```{r}
+library(tm)
+
+# Convert text to lowercase
+corpus <- tm_map(corpus, content_transformer(tolower))
+
+# Remove punctuation
+corpus <- tm_map(corpus, removePunctuation)
+
+# Remove numbers
+corpus <- tm_map(corpus, removeNumbers)
+
+# Remove stopwords
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+
+# Strip whitespace
+corpus <- tm_map(corpus, stripWhitespace)
+
+```
+
+The text processing still isnt working so there may be an encoding error????
+
+```{r}
+# Convert text data to UTF-8 encoding
+corpus <- tm_map(corpus, content_transformer(function(x) iconv(x, to = "UTF-8", sub = "byte")))
+
+```
+
+I did this to convert text data to UTF-8 encoding which would replace any invalid characters with some sort of suitable representation. Im going to be honest though, if project gutenberg is popular for text analysis stuff, I dont understand how there would a an encoding error. Wouldnt they have been able to make it normal? I guess Im not sure exactly how this works. 
+
+```{r}
+# Convert text to lowercase
+corpus <- tm_map(corpus, content_transformer(tolower))
+
+# Remove punctuation
+corpus <- tm_map(corpus, removePunctuation)
+
+# Remove numbers
+corpus <- tm_map(corpus, removeNumbers)
+
+# Remove stopwords
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+
+# Strip whitespace
+corpus <- tm_map(corpus, stripWhitespace)
+
+```
+
+OMG it worked WOWOW. Now just to inspect what Ive done - the "preprocessed" text content :
+
+```{r}
+# Inspect a sample of preprocessed text content
+sample_preprocessed_text <- content(corpus[[1]])  # Print the preprocessed content of the first document
+print(sample_preprocessed_text)
+```
+
+EXCELLENT. 
+
+## Steps for topic modeling
+
+### Creating the Document-Term Matric
+
+```{r}
+# Create a Document-Term Matrix (DTM) from the preprocessed VCorpus
+dtm <- DocumentTermMatrix(corpus)
+
+```
+
+SUCCESS. The rows represent each document and the columns represent terms/words. IN the matrix, the cells will display the frequency count for each word.
+
+### Save the DTM
+
+```{r}
+# Save the Document-Term Matrix (DTM) as an RData file
+save(dtm, file = "topic_modeling/document_term_matrix.RData")
+
+```
+
+NOW IM READY TO PREFORM TOPIC MODELING AND DO MY ANALYSIS
+
+## Assessing progress
+
+This step was chaos. If I had been able to loop or parallel the process of downloading each individual book, my whole project would be done by now. Truly. It took me at least 3 hours and I was being very diligent. I have assessed my progress with comments throughout this document, narrating the chaos and struggle at different steps. There is just one last problem: Pushing my changes. I have committed changes a few times, but the `all_works.csv` file is too big and github wont let me push it becuase it exceeds their limit. Here is my thought process: I have the code that produced the all_works dataframe, and I know the code works so I can use it again if need be. HOWEVER I dont think I will need to use it again becuase I have already created the corpus then saved the Document Term Matrix that takes all the data from the corpus processed it up a bit. SO--> I will delete the `all_works` csv file now, so that I can push my work. if I need to remake the `all_works.csv` thing, I can just run that long code again and it should be fine. Fingers crossed at least. 

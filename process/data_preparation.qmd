@@ -1,0 +1,166 @@
+---
+title: "Project Step 3: Data Preparation"
+author: "Shannon Cummings"
+format: html
+---
+
+### Brainstorming
+
+As I mentioned in Project Step 2: *my goal is to use the standardized project gutenberg corpus as a dataset, then to subset the data first into all works within the genre of science fiction, and then create three subgroups based on time. The first time frame will range from 1990-1945, the second from 1945-1990, and the from 1990-present. The first time frame begins at the turn of the century and ends at the end of WWII. The second time frame begins at the end of WWII and ends with the end of the Cold War. The final time begins at the ed of the Cold war and will include everything available to present day. My Hypothesis is that there will be dramatic thematic differences in the science fiction published in each time frame based on the cultural events that mark the beginning and end of each set*
+
+#### About Project Gutenberg and `gutenbergr`
+
+Based on reading and work done for lab 5, Project Gutenberg consists of a digital archive of cultural works, and the Standardized Project Gutenberg Corpus (SPGC) is a complete curarion of more than 50,000 books
+
+### Draft a preparation strategy
+
+```{r}
+#| label: loading packages
+#| message: false
+library(dplyr) # data manipulation
+library(readr) # data import/ export
+library(gutenbergr) # Project Gutenberg API
+library(skimr)      # descriptive statistics
+library(knitr)      # tables
+library(ggplot2)    # plotting
+library(tidytext) # text processing
+```
+
+```{r}
+glimpse(gutenberg_subjects)
+```
+```{r}
+subjects_df <-gutenberg_subjects
+
+write_csv(subjects_df, "data/gutenberg_subjects.csv")
+```
+
+I just made an original dataframe that includes all of the subjects for each work. By reading the description of the `gutenbergr` package, I can see that `gutenberg_subjects` includes a column for `gutenberg_id` which can be joined with `gutenberg_metadata`. So, my next step is to join the two sets of data so that I can see the publication.
+
+```{r}
+glimpse(gutenberg_metadata)
+
+metadata_df <-gutenberg_metadata
+
+write_csv(metadata_df, "data/gutenberg_metadata.csv")
+
+# Merge based on Gutenberg ID (gutenberg_id column)
+combined_data <- merge(metadata_df, subjects_df, by = "gutenberg_id", all.x = TRUE)
+```
+
+Next, there is a problem of "publication date." I haven't been able to find publication dates anywhere in the metadata, so I might have to adapt my strategy and use authors as a proxy for publication date. What I am going to do now is combine the `gutenberg_authors` data with the combined dataset I just created. 
+
+```{r}
+
+glimpse(gutenberg_authors)
+
+authors_df <-gutenberg_authors
+
+write_csv(authors_df, "data/gutenberg_authors.csv")
+
+# Merge based on Author ID (gutenberg_id column)
+authors_combined_data <- merge(authors_df, combined_data, by = "gutenberg_author_id", all.x = TRUE)
+```
+#### Now I need to figure out how to filter the data
+
+(@) What data from from the complete `authors_compiled_data` do I NOT need:
+* anything with the USA as the author
+* I dont think I need aliases?
+* ANything written by an author born before probably 1850
+  + this would make them about 50 by the year 1900 which is when I wanted my first timeframe to begin
+
+I need to figure out a way to group all of the different fiction-like subjects from `subjects_df` together under some general fiction tag. Then, I need to determine what data I know I 
+
+#### Change of plans?
+
+So I was exploring the `authors_compiled_data` a bit more and I saw that there is a column called `gutenberg_bookshelf`. What I am going to do now is maybe filter that column to see what all of the available bookshelves are that I can sort through. I went on the gutenberg.org website and saw that there are a few main bookshelves, one including Fiction. Under Fiction, there are two more "specific" bookhelves that I am interested in: Science Fiction and Precursors of Science Fiction. If these are under the `gutenberg_bookshelves` column, then I think my process got a little simpler than what I was trying to make it.
+
+
+```{r}
+
+
+# Filter works where 'gutenberg_bookshelf' contain 'Fiction'
+fiction_metadata <- metadata_df[grep("Fiction", metadata_df$gutenberg_bookshelf, ignore.case = TRUE), ]
+
+# View the subsetted dataframe
+head(fiction_metadata)
+
+```
+Ugh ok. The table is showing that there are 8 works tagged as Fiction, but I know that this can't be true. On the website, it shows there are 1341 books tagged as Science Fiction, 55 books tagged as Science Fiction by Women, and 36 that are Precursors to Science Fiction. What I am going to try now is to see if I can ask for it to filter bookshelves that contain some variation of Science Fiction, even if there are other words in the bookshelf. 
+
+I couldnt figure out how to do this, so I asked chatGPT and this is what it told me to do: 
+If you want to create a dataset containing works that have the words "science fiction" somewhere within the gutenberg_bookshelves column, even if they are part of a longer string or surrounded by other words, you can use regular expressions (regex) in R to perform a more flexible search. Here's how you can accomplish this:
+
+```{r}
+
+# Filter works with 'science fiction' in bookshelf (using grepl with ignore.case)
+science_fiction_metadata <- metadata_df[grepl("science\\s+fiction", metadata_df$gutenberg_bookshelf, ignore.case = TRUE), ]
+
+# View the subsetted dataframe
+head(science_fiction_metadata)
+
+```
+Another problem: I know there are more than 8 works with Science Fiction somewhere in the bookshelf. What am I supposed to do to get the rest???
+
+When I click the `metadata_df` in the environment tab, I am able to filter the column to show works with Science Fiction anywhere in the bookshelf tag like if I did command F on a PDF and it highlighted Science Fiction everywhere it was found, regardless of the surrounding words. How do I type a code to make a dataset that contains only the works that ome up when I filter the dataset that way??????
+
+WAIT. I DONT KNOW IF THIS IS AN ISSUE WITH JUST THE PREVIEW DISPLAYED HERE BUT WHEN I CLICKED `science_fiction_metadata` it showed there are 1437 observations. I dont know what mess I created with all of this extra code, but what I want to do is save this data as a csv file so I can access it later.
+
+```{r}
+write_csv(science_fiction_metadata, "data/science_fiction_metadata.csv")
+```
+
+YAY IT WORKED. 
+
+#### Deriving further
+
+Ok, so what I need to do now is to cut down the data more so it fits the parameters I am looking for. Something that also just came to mind is that I plan to try to do semantic or topic modeling to the texts, so I think I am going to also filter out works that are marked as FALSE under the `has_text` column in the metadata.
+
+First: I will combine the `science_fiction_metadata` with some of the columns from `authors_df`. I want, the authors' birthdate and deathdates to be included in `science_fiction_metadata`.
+
+```{r}
+# Merge authors_df with science_fiction_metadata based on gutenberg_author_id
+merged_scifi_metadata <- merge(science_fiction_metadata, authors_df[, c("gutenberg_author_id", "birthdate", "deathdate")], 
+                         by = "gutenberg_author_id", all.x = TRUE)
+
+# View the merged metadata
+head(merged_scifi_metadata)
+
+```
+
+YAY excellent. Ok now Im going to write this as a csv so i have it for later. 
+
+```{r}
+write_csv(merged_scifi_metadata, "data/merged_scifi_metadata.csv")
+```
+
+Now what I want to do is remove all works whose authors' birthdate is before 1850.
+
+```{r}
+
+# Filter merged_scifi_metadata to remove works with authors' birthdate before 1850
+filtered_birthdate_metadata <- merged_scifi_metadata[!is.na(merged_scifi_metadata$birthdate) &merged_scifi_metadata$birthdate >= 1850, ]
+
+write_csv(filtered_birthdate_metadata, "data/filtered_birthdate_metadata.csv")
+
+```
+
+YAY great. ok, now I want to filter the data to show only works where the language is en and the has_test is TRUE
+
+```{r}
+
+# Filter to include only works where has_text is TRUE and language is 'en'
+filtered_en_scifi_post_1850 <- filtered_birthdate_metadata[filtered_birthdate_metadata$has_text == TRUE & filtered_birthdate_metadata$language == 'en', ]
+
+write_csv(filtered_en_scifi_post_1850, "data/filtered_en_scifi_post_1850.csv")
+
+```
+
+I am now ready to analyse works based on the authors birthdate. Hopefully I will be able to study trends based on time periods. 
+
+### Assessing progress
+
+
+This step took a great deal of trial and error. I know what I want to see happen with the different dataframes, but so often I dont know how to actually type it out in code and make it happen as I envisioned. ChatGPT has been really helpful because I can explain exactly what data I have and what packages I am using and ask how produce the code for what I am tryign to articulate. 
+
+Because there is no publicatoin date included in `gutenbergr` I have had to rethink how I want to go about my project. I now have a datatable with all scifi works in english that have full text written by authors born after 1850. What I am going to have to do is instead of look at works published in different eras, I will have to focus on when authors would have been different ages. Authors growing up at the turn of the century, in my hypothesis, will have different perspectives than authors growing up in the cold war. This is going to be how I have to do my analysis
